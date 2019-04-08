@@ -1,7 +1,7 @@
 #ifndef _LOAD_SOUND_CLASS_H_
 #define	_LOAD_SOUND_CLASS_H_
 
-#include "main.h"
+#include "libTool.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -20,7 +20,6 @@
 //*****************************************************************************
 // 構造体
 //*****************************************************************************
-#pragma pack(push, 1)
 typedef struct	// RIFFチャンク 
 {
 	char	riffChunk[4];
@@ -53,16 +52,15 @@ typedef struct	// WAVファイル
 	FMT_CHUNK	fmt;
 	DATA_CHUNK	data;
 }WAV_FILE;
-#pragma pack(pop)
 
 //*****************************************************************************
 // クラス
 //*****************************************************************************
-class LOAD_WAV
+class SAI_LOAD_WAV
 {
 public:
-	LOAD_WAV() {};
-	~LOAD_WAV() {};
+	SAI_LOAD_WAV() {};
+	~SAI_LOAD_WAV() {};
 
 	// サウンドの読み込み
 	bool OpenSound(HWND hWnd, char fileName[], char soundPath[]);

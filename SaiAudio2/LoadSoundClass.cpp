@@ -3,7 +3,7 @@
 //=============================================================================
 // サウンドの読み込み
 //=============================================================================
-bool LOAD_WAV::OpenSound(HWND hWnd, char fileName[], char soundPath[])
+bool SAI_LOAD_WAV::OpenSound(HWND hWnd, char fileName[], char soundPath[])
 {
 	OPENFILENAME ofn;
 	char path[CHAR_MAX];
@@ -44,7 +44,7 @@ bool LOAD_WAV::OpenSound(HWND hWnd, char fileName[], char soundPath[])
 //*****************************************************************************
 // WAVファイルの読み込む(WAVEFORMATEX構造体)
 //*****************************************************************************
-WAVEFORMATEX LOAD_WAV::LoadWavFile(const char *path, WAV_FILE  *wavfile)
+WAVEFORMATEX SAI_LOAD_WAV::LoadWavFile(const char *path, WAV_FILE  *wavfile)
 {
 	WAVEFORMATEX	pcm;				// WAVEFORMATEX構造体
 	FILE			*fp;				// ファイル構造体							

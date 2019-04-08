@@ -21,8 +21,8 @@ SAI_AUDIO2_INTERFACE::SAI_AUDIO2_INTERFACE()
 				// 成功+1
 				initCheck++;
 
-				// ファイルの読み込みクラス
-				wavFile = new LOAD_WAV;
+				// クラスnew
+				wavFile = new SAI_LOAD_WAV;
 			}
 		}
 	}
@@ -52,7 +52,7 @@ SAI_AUDIO2_INTERFACE::~SAI_AUDIO2_INTERFACE()
 	// ボリュームのメモリ解放
 	free(channelVolume);
 
-	// ファイルの読み込みクラス
+	// クラスdelete
 	delete wavFile;
 }
 
@@ -69,13 +69,13 @@ bool SAI_AUDIO2_INTERFACE::InitCheck()
 }
 
 // 再生
-HRESULT SAI_AUDIO2_INTERFACE::PlayVoice(SAI_VOICE_TOOL *voiceTool)
+HRESULT SAI_AUDIO2_INTERFACE::PlayVoice(SAI_VOICE_TOOL *svt)
 {
 	// ボイスと再生状態のチェック
-	if ((voiceTool->sourceVoice != NULL)&&(!voiceTool->isPlay))
+	if ((svt->sourceVoice != NULL)&&(!svt->isPlay))
 	{
 		// 再生
-		voiceTool->sourceVoice->Start();
+		svt->sourceVoice->Start();
 
 		return S_OK;
 	}
@@ -84,13 +84,13 @@ HRESULT SAI_AUDIO2_INTERFACE::PlayVoice(SAI_VOICE_TOOL *voiceTool)
 }
 
 // 停止
-HRESULT SAI_AUDIO2_INTERFACE::StopVoice(SAI_VOICE_TOOL *voiceTool)
+HRESULT SAI_AUDIO2_INTERFACE::StopVoice(SAI_VOICE_TOOL *svt)
 {
 	// ボイスと再生状態のチェック
-	if ((voiceTool->sourceVoice != NULL) && (voiceTool->isPlay))
+	if ((svt->sourceVoice != NULL) && (svt->isPlay))
 	{
 		// 停止
-		voiceTool->sourceVoice->Stop();
+		svt->sourceVoice->Stop();
 
 		return S_OK;
 	}
@@ -99,13 +99,13 @@ HRESULT SAI_AUDIO2_INTERFACE::StopVoice(SAI_VOICE_TOOL *voiceTool)
 }
 
 // 一時停止
-HRESULT SAI_AUDIO2_INTERFACE::PauseVoice(SAI_VOICE_TOOL *voiceTool)
+HRESULT SAI_AUDIO2_INTERFACE::PauseVoice(SAI_VOICE_TOOL *svt)
 {
 	// ボイスと再生状態のチェック
-	if ((voiceTool->sourceVoice != NULL) && (voiceTool->isPlay))
+	if ((svt->sourceVoice != NULL) && (svt->isPlay))
 	{
 		// 一時停止
-		voiceTool->sourceVoice->Stop(XAUDIO2_PLAY_TAILS);
+		svt->sourceVoice->Stop(XAUDIO2_PLAY_TAILS);
 
 		return S_OK;
 	}
@@ -116,7 +116,7 @@ HRESULT SAI_AUDIO2_INTERFACE::PauseVoice(SAI_VOICE_TOOL *voiceTool)
 //==============================================================
 // ロードサウンド
 //==============================================================
-IXAudio2SourceVoice *SAI_AUDIO2_INTERFACE::LoadXAudio2Voice(char *path, SAI_VOICE_TOOL *voiceTool)
+IXAudio2SourceVoice *SAI_AUDIO2_INTERFACE::LoadXAudio2Voice(const char *path, SAI_VOICE_TOOL *svt)
 {
 	IXAudio2SourceVoice *sourceVoice = NULL;	// ソースボイス
 	WAVEFORMATEX		pcm;					// WAVEFORMATEX構造体
@@ -129,13 +129,13 @@ IXAudio2SourceVoice *SAI_AUDIO2_INTERFACE::LoadXAudio2Voice(char *path, SAI_VOIC
 		memset(&buffer, 0, sizeof(XAUDIO2_BUFFER));
 
 		// wavファイルの読み込み(WAVEFORMATEX構造体)
-		pcm = wavFile->LoadWavFile(path, voiceTool->wav);
+		pcm = wavFile->LoadWavFile(path, &svt->wavFmt);
 
 		// バッファの設定
-		buffer.pAudioData	= (BYTE*)voiceTool->wav->data.waveData;
+		buffer.pAudioData	= (BYTE *)svt->wavFmt.data.waveData;
 		buffer.Flags		= XAUDIO2_END_OF_STREAM;
-		buffer.AudioBytes	= voiceTool->wav->data.waveSize;
-		buffer.LoopCount	= voiceTool->loopCnt;
+		buffer.AudioBytes	= svt->wavFmt.data.waveSize;
+		buffer.LoopCount	= svt->loopCnt;
 	}
 
 	// ソースボイスの作成
@@ -152,8 +152,8 @@ IXAudio2SourceVoice *SAI_AUDIO2_INTERFACE::LoadXAudio2Voice(char *path, SAI_VOIC
 
 	{// ボリュームの初期化
 		// メモリ確保[チャンネル数]
-		channelVolume = (float *)malloc(voiceTool->wav->fmt.fmtChannel * sizeof(float));
-		for (int i = 0; i < voiceTool->wav->fmt.fmtChannel; i++)
+		channelVolume = (float *)malloc(svt->wavFmt.fmt.fmtChannel * sizeof(float));
+		for (int i = 0; i < svt->wavFmt.fmt.fmtChannel; i++)
 		{
 			channelVolume[i] = SAI_DEFAULT_VOLUME;
 		}
