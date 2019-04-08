@@ -1,5 +1,5 @@
-#ifndef _SAI_DELAY_H_
-#define _SAI_DELAY_H_
+#ifndef _SAI_FADE_IN_H_
+#define _SAI_FADE_IN_H_
 
 #include "libTool.h"
 #include "LoadSoundClass.h"
@@ -8,29 +8,21 @@
 #pragma comment(lib,"xapobase.lib")
 
 //*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define DELAY_TIME_DEFAULT		(1.0f)
-#define DELAY_VOLUME_DEFAULT	(0.5f)
-
-//*****************************************************************************
 // 構造体宣言
 //*****************************************************************************
-typedef struct	// SAI式I 遅延処理(only for 2ch)
+typedef struct	// SAI式I フェイドイン(only for 2ch)
 {
-	float			delayTime;		// 遅延の秒数
-	float			volume;			// 残響の音量
-
-}SAI_APO_DELAY;
+	float			fadeTime;		// 遅延の秒数
+}SAI_APO_FADE_IN;
 
 //*****************************************************************************
-// SAI_DELAY_APO (only for 2ch)
+// SAI_FADE_IN_APO (only for 2ch)
 //*****************************************************************************
-class __declspec(uuid("{80D4BED4-7605-4E4C-B29C-5479C375C599}"))SAI_DELAY_APO : public CXAPOParametersBase
+class __declspec(uuid("{80D4BED4-7605-4E4C-B29C-5479C375C599}"))SAI_FADE_IN_APO : public CXAPOParametersBase
 {
 public:
-	SAI_DELAY_APO(SAI_VOICE_TOOL *svt);	// 初期化用
-	~SAI_DELAY_APO();					// 終了用
+	SAI_FADE_IN_APO(SAI_VOICE_TOOL *svt);	// 初期化用
+	~SAI_FADE_IN_APO();					// 終了用
 
 	// LockForProcessのオーバーライド
 	STDMETHOD(LockForProcess)
@@ -60,18 +52,17 @@ private:
 	WAVEFORMATEX inFormat;
 	WAVEFORMATEX outFormat;
 
-	// エコー用
-	float	*backupBuf;
-	int		delaySample;
-	int		readPos;
-	int		writePos;
-	bool	play;
-
 	// WAVファイル
 	WAV_FILE	wavFmt;
 
+	// フェイド用
+	bool	isFade;		// true:フェイド中 false:フェイド完了
+	float	*backupBuf;
+	int		fadeSample;
+	int		fadeSampleIndex;
+
 	// パラメータ
-	SAI_APO_DELAY apoParameter[3];
+	SAI_APO_FADE_IN apoParameter[3];
 };
 
 #endif

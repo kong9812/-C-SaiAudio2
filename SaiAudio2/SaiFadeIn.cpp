@@ -1,11 +1,11 @@
-#include "SaiDelay.h"
+#include "SaiFadeIn.h"
 
 //=============================================================================
 // APOクラスの登録
 //=============================================================================
-XAPO_REGISTRATION_PROPERTIES SAI_DELAY_APO::_regProps = {
-	__uuidof(SAI_DELAY_APO),
-	L"SAI_DELAY_APO",
+XAPO_REGISTRATION_PROPERTIES SAI_FADE_IN_APO::_regProps = {
+	__uuidof(SAI_FADE_IN_APO),
+	L"SAI_FADE_IN_APO",
 	L"Copyright (C)2019 CHOI YAU KONG",
 	1,
 	0,
@@ -15,47 +15,30 @@ XAPO_REGISTRATION_PROPERTIES SAI_DELAY_APO::_regProps = {
 //=============================================================================
 // クラスの初期化
 //=============================================================================
-SAI_DELAY_APO::SAI_DELAY_APO(SAI_VOICE_TOOL *svt) : CXAPOParametersBase(&_regProps, (BYTE *)apoParameter, sizeof(SAI_APO_DELAY), false)
+SAI_FADE_IN_APO::SAI_FADE_IN_APO(SAI_VOICE_TOOL *svt) : CXAPOParametersBase(&_regProps, (BYTE *)apoParameter, sizeof(SAI_APO_FADE_IN), false)
 {
 	// パラメータの初期化
 	for (int i = 0; i < 3; i++)
 	{
-		apoParameter[i].volume = DELAY_VOLUME_DEFAULT;
-		apoParameter[i].delayTime = DELAY_TIME_DEFAULT;
+		apoParameter[i].fadeTime	= 10.0f;
 	}
 
 	// wavFileのコピー
 	wavFmt = svt->svtBase.wavFmt;
-
-	// 遅延が発生できるサンプリング数(2秒の遅延)
-	delaySample = wavFmt.fmt.fmtSampleRate * wavFmt.fmt.fmtChannel * 2;
-
-	// メモリ確保(2秒のサンプリング)
-	backupBuf = (float *)malloc(sizeof(float) * delaySample);
-
-	// 初期化
-	memset(backupBuf, 0, sizeof(float) * delaySample);
-
-	// 読み込み位置の初期化
-	readPos = 0;
-
-	// 書き出し位置の初期化
-	writePos = 0;
 }
 
 //=============================================================================
 // クラスの終了処理
 //=============================================================================
-SAI_DELAY_APO::~SAI_DELAY_APO()
+SAI_FADE_IN_APO::~SAI_FADE_IN_APO()
 {
-	// メモリ解放
-	free(backupBuf);
+
 }
 
 //=============================================================================
 // LockForProcessのオーバーライド
 //=============================================================================
-HRESULT SAI_DELAY_APO::LockForProcess
+HRESULT SAI_FADE_IN_APO::LockForProcess
 (UINT32 inputLockedParameterCount,
 	const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS * pInputLockedParameters,
 	UINT32 outputLockedParameterCount,
@@ -79,37 +62,33 @@ HRESULT SAI_DELAY_APO::LockForProcess
 //=============================================================================
 // OnSetParametersのオーバーライド
 //=============================================================================
-void SAI_DELAY_APO::OnSetParameters
+void SAI_FADE_IN_APO::OnSetParameters
 (const void* pParameters, UINT32 ParameterByteSize)
 {
-	SAI_APO_DELAY *tmpParameters = ((SAI_APO_DELAY *)pParameters);
+	SAI_APO_FADE_IN *tmpParameters = ((SAI_APO_FADE_IN *)pParameters);
 
-	if (tmpParameters->volume > 1.0f)
-	{
-		tmpParameters->volume = 1.0f;
-	}
-	else if (tmpParameters->volume < 0.0f)
-	{
-		tmpParameters->volume = 0.0f;
-	}
+	// フェイド可能の状態
+	fadeSample		= (int)(tmpParameters->fadeTime * wavFmt.fmt.fmtChannel * wavFmt.fmt.fmtSampleRate);
+	fadeSampleIndex = 0;
+	isFade			= false;
 }
 
 //=============================================================================
 // Processのオーバーライド
 //=============================================================================
-void SAI_DELAY_APO::Process
+void SAI_FADE_IN_APO::Process
 (UINT32 inputProcessParameterCount,
 	const XAPO_PROCESS_BUFFER_PARAMETERS * pInputProcessParameters,
 	UINT32 outputProcessParameterCount,
 	XAPO_PROCESS_BUFFER_PARAMETERS * pOutputProcessParameters,
 	BOOL isEnabled)
 {
-	if (isEnabled)
+	if ((isEnabled) && (!isFade))
 	{
 		if (pInputProcessParameters->BufferFlags != XAPO_BUFFER_SILENT)
 		{
 			// 仮のパラメータ構造体 = 使用するパラメータのポインたー
-			SAI_APO_DELAY *tmpParmeter = (SAI_APO_DELAY *)BeginProcess();
+			SAI_APO_FADE_IN *tmpParmeter = (SAI_APO_FADE_IN *)BeginProcess();
 
 			// 入出力のバッファ
 			float *inputBuf = (float *)pInputProcessParameters->pBuffer;
@@ -117,23 +96,16 @@ void SAI_DELAY_APO::Process
 
 			for (int i = 0; i < ((int)pInputProcessParameters->ValidFrameCount * wavFmt.fmt.fmtChannel); i++)
 			{
-				// バッファの保存
-				backupBuf[writePos] = inputBuf[i] + backupBuf[readPos] * tmpParmeter->volume;
-				writePos++;
-				if (writePos >= delaySample)	// オーバー防止
-				{
-					// 0番目に戻る
-					writePos = 0;
-				}
+				float tmp = (float)fadeSampleIndex / (float)fadeSample;
+				outputBuf[i] = inputBuf[i] * tmp;
 
-				// 結果
-				readPos = (int)(writePos - delaySample * tmpParmeter->delayTime);
-				if (readPos < 0)	// オーバー防止
+				fadeSampleIndex++;
+
+				if (fadeSampleIndex >= fadeSample)
 				{
-					// 0番目に戻る
-					readPos += delaySample;
+					// フェイド完了
+					isFade = true;
 				}
-				outputBuf[i] = (backupBuf[readPos] * tmpParmeter->volume) + (inputBuf[i] * (1 - tmpParmeter->volume));
 			}
 
 			// エンドプロセス

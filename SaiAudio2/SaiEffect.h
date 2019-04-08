@@ -9,6 +9,7 @@
 
 // APO
 #include "SaiDelay.h"
+#include "SaiFadeIn.h"
 
 // クラス
 class SAI_EFFECT_INTERFACE
@@ -19,10 +20,11 @@ public:
 
 private:
 
-	XAUDIO2_EFFECT_CHAIN		chain;			// エフェクトチェン
-	XAUDIO2_EFFECT_DESCRIPTOR	descriptor;		// エフェクトディスクリプタ
+	XAUDIO2_EFFECT_CHAIN		chain;				// エフェクトチェン
+	XAUDIO2_EFFECT_DESCRIPTOR	descriptor[2];		// エフェクトディスクリプタ
 
-	SAI_APO_DELAY				saiDelay;		// SAI_DELAY_APOのパラメータ
+	SAI_APO_DELAY				saiDelay;			// SAI_DELAY_APOのパラメータ
+	SAI_APO_FADE_IN				saiFadeIn;			// SAI_DELAY_APOのパラメータ
 };
 
 #endif
