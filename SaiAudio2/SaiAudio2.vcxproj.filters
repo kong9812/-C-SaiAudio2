@@ -19,6 +19,12 @@
     <Filter Include="ヘッダー ファイル\sound">
       <UniqueIdentifier>{34a18533-e508-4303-a04b-327cb54ee06a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\soundEffect">
+      <UniqueIdentifier>{7d41ca38-6c48-4335-bdf1-74a229beab52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\soundEffect">
+      <UniqueIdentifier>{08c3455f-6956-437c-b0b6-b68cf51afe16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -29,6 +35,12 @@
     </ClCompile>
     <ClCompile Include="LoadSoundClass.cpp">
       <Filter>ソース ファイル\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="SaiDelay.cpp">
+      <Filter>ソース ファイル\soundEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="SaiEffect.cpp">
+      <Filter>ソース ファイル\soundEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +55,12 @@
     </ClInclude>
     <ClInclude Include="libTool.h">
       <Filter>ヘッダー ファイル\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="SaiDelay.h">
+      <Filter>ヘッダー ファイル\soundEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="SaiEffect.h">
+      <Filter>ヘッダー ファイル\soundEffect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
